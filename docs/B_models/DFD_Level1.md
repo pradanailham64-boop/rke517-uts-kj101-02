@@ -2,6 +2,7 @@
 
 **Case Code:** KJ101-02  
 **System Name:** RS Islam Al-Hikmah Misfile & Folder Tracking System  
+**Version:** v1.1 (Updated for CR-1 on 13 November 2026)  
 
 ---
 
@@ -11,14 +12,14 @@ The Level 1 DFD decomposes the system into four main balanced processes and four
 
 ### Processes:
 * **1.0 Log & Manage Search:** Captures missing folder reports, manages the 15-minute search timer, and records search locations.
-* **2.0 Issue & Track Temporary Folder:** Automatically triggers temp folder creation after 15 minutes, assigns Temp Folder IDs, and tracks building movement.
+* **2.0 Issue & Track Temporary Folder:** Automatically triggers temp folder creation after 15 minutes, assigns Temp Folder IDs with a 7-day merge due date (CR-1), and tracks building movement.
 * **3.0 Execute Folder Merge:** Guided consolidation of temporary folder contents with original folders when found.
-* **4.0 Escalation & Analytics Engine:** Audits unresolved searches against the 3-day threshold and aggregates misfile shelf hotspots.
+* **4.0 Escalation & Analytics Engine:** Audits unresolved searches against the **3-day** missing-folder threshold, audits unmerged temporary folders against the **7-day** merge threshold (CR-1), and aggregates misfile shelf hotspots.
 
 ### Data Stores:
 * **DS-1: Patient_Records** (Patient demographic & master RM metadata)
 * **DS-2: Misfile_Search_Logs** (Active and resolved search logs, search durations, initial & found locations)
-* **DS-3: Temporary_Folders** (Temporary folder IDs, issuance timestamps, active status)
+* **DS-3: Temporary_Folders** (Temporary folder IDs, issuance timestamps, 7-day merge due timestamps, active/merged status)
 * **DS-4: Shelf_Hotspot_Analytics** (Shelf numbers, misfile frequencies, building tags)
 
 ---
@@ -52,7 +53,7 @@ graph TD
     P1 -->|Update Misfile Shelf Count| DS4
 
     P1 -->|15-Min Timer Expired| P2
-    P2 -->|Create Temp Folder ID| DS3
+    P2 -->|Create Temp Folder ID & 7-Day Due Date| DS3
     P2 -->|Temp Folder Status| RS
     DS3 -->|Read Active Status| DOC
 
@@ -60,9 +61,10 @@ graph TD
     P3 <-->|Read/Update Temp Folder| DS3
     P3 <-->|Update Log to MERGED| DS2
 
-    DS2 -->|Check 3-Day Elapsed Time| P4
+    DS2 -->|Check 3-Day Missing Threshold| P4
+    DS3 -->|Check 7-Day Unmerged Threshold CR-1| P4
     DS4 -->|Aggregate Shelf Misfiles| P4
-    P4 -->|3-Day Escalation Alert & Hotspot Report| HOD
+    P4 -->|3-Day Missing & 7-Day Unmerged Alerts + Hotspot Report| HOD
 ```
 
 ---
@@ -72,6 +74,6 @@ graph TD
 | Process | Inputs | Outputs | Balanced Data Store Interaction |
 |---|---|---|---|
 | **1.0 Log Search** | FC Search Details, DS-1 Patient Data | DS-2 Search Log Entry, DS-4 Shelf Count, 15-Min Timer to P2 | Reads DS-1, Writes DS-2 & DS-4 |
-| **2.0 Issue Temp** | 15-Min Trigger from P1 | DS-3 Temp Folder Record, RS Status Notification, DOC View | Writes DS-3, Updates Status |
+| **2.0 Issue Temp** | 15-Min Trigger from P1 | DS-3 Temp Folder Record (with 7-day due date), RS Status Notification, DOC View | Writes DS-3, Updates Status |
 | **3.0 Merge Folders** | FC Merge Request, DS-3 Temp Record | DS-3 Archived Status, DS-2 Merged Status | Updates DS-2 & DS-3 |
-| **4.0 Escalation** | DS-2 Unresolved Logs (>3 Days), DS-4 Shelf Data | Escalation Alert & Shelf Hotspot Report to HOD | Reads DS-2 & DS-4 |
+| **4.0 Escalation** | DS-2 Missing Logs (>3 Days), DS-3 Unmerged Temp Folders (>7 Days, CR-1), DS-4 Shelf Data | 3-Day Missing Alert, 7-Day Merge Overdue Alert & Shelf Hotspot Report to HOD | Reads DS-2, DS-3 & DS-4 |

@@ -2,10 +2,11 @@
 
 **Case Code:** KJ101-02  
 **Hospital:** RS Islam Al-Hikmah, Bogor  
+**Version:** v1.1 (Updated for CR-1 on 13 November 2026)  
 
 ---
 
-## 1. Description of Today's Work Process (AS-IS)
+## 1. Description of Work Process & Escalation Rules
 
 Currently, at RS Islam Al-Hikmah, Bogor, when a patient arrives for an outpatient or inpatient appointment:
 1. **Initial Search:** The filing clerk (e.g., Mas Andi or Joko) searches for the patient's medical record folder on its designated shelf in the central archive.
@@ -15,14 +16,14 @@ Currently, at RS Islam Al-Hikmah, Bogor, when a patient arrives for an outpatien
    - If found within 15 minutes, the folder is delivered to the clinic.
    - If **not found after 15 minutes**, the filing clerk creates a **Temporary Folder** (Form RM-48) so the patient can be examined by the doctor without further delay.
 5. **Care Delivery:** The doctor sees the patient using the temporary folder and writes clinical notes in it.
-6. **Post-Care & Search Resolution:**
-   - When the original folder is eventually located (e.g., days later on Shelf 54), the temporary folder and original folder are supposed to be **joined (merged) by hand**.
-   - However, in practice, temporary folders are frequently **never merged**, causing duplicate records to accumulate, lost clinical history, and unresolved missing cases.
-7. **Escalation Threshold:** If a missing folder remains unresolved after **3 days** (per SPO RM-48 & voice note correction), it is reported manually to the Head of Medical Records.
+6. **Missing Folder Escalation (3 Days):** If the original folder is still not found within **3 days** (per SPO RM-48 & voice note), it is reported to the Head of Medical Records.
+7. **Temporary Folder Merge & 7-Day Rule (CR-1):**
+   - Per **CR-1**, temporary folders must be merged with the original folder within **7 days**.
+   - If a temporary folder remains unmerged after **7 days**, the Head of Medical Records is notified.
 
 ---
 
-## 2. Flowmap Diagram (Mermaid & Step-by-Step)
+## 2. Flowmap Diagram (Mermaid)
 
 ```mermaid
 flowchart TD
@@ -37,9 +38,9 @@ flowchart TD
     H --> I[Deliver Temporary Folder to Doctor]
     I --> J[Doctor Examines Patient & Writes Notes]
     J --> K[Patient Departs / Notes Stored in Temp Folder]
-    K --> L{Original Folder Found Later?}
-    L -- No (After 3 Days) --> M[Report Missing Folder to Head of RM]
-    L -- Yes --> N{Staff Hand-Merge Folders?}
+    K --> L{Original Folder Found within 3 Days?}
+    L -- No (After 3 Days) --> M[Report Still-Missing Folder to Head of RM]
+    L -- Yes --> N{Merged within 7 Days? CR-1}
     N -- Yes --> O[Folders Merged & Returned to Shelf]
-    N -- No / Forgotten --> P[Duplicate Temp Folder Accumulates & Remains Unmerged]
+    N -- No (After 7 Days) --> P[Notify Head of RM: Unmerged Temp Folder Overdue]
 ```
