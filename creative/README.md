@@ -3,6 +3,7 @@
 **Case Code:** KJ101-02  
 **Hospital:** RS Islam Al-Hikmah, Bogor  
 **Student:** Pradana Ilham Ismail (NIM: 20240306057, Class: KJ101)  
+**Version:** v1.1 (Updated for CR-1 on 13 November 2026)  
 
 ---
 
@@ -87,9 +88,9 @@ Designed for dr. Arif Budiman and clinic doctors in Poli Dalam. **100% Read-Only
    * Monday Way: Input the exact shelf where you found misfiled folders (e.g. Shelf 54)
      so supervisor can audit problem shelves.
 
-4. AUTOMATED 3-DAY ESCALATION TO HEAD OF RM!
-   * Old Way: Forgotten missing files sitting unresolved for weeks.
-   * Monday Way: System auto-notifies Head of Medical Records after 3 days (72 hours).
+4. AUTOMATED 3-DAY & 7-DAY ESCALATION TO HEAD OF RM!
+   * Still-Missing Folders: Auto-reported to Head of RM if not found within 3 days.
+   * Temporary Folders (CR-1): Must be merged within 7 days, or Head of RM is notified.
 
 5. EASY DIGITAL MERGING!
    * Old Way: Temporary folders never getting joined to original records.

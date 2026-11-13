@@ -2,18 +2,19 @@
 
 **Case Code:** KJ101-02  
 **Database Name:** `db_misfile_tracking_rke517`  
+**Version:** v1.1 (Updated for CR-1 on 13 November 2026)  
 
 ---
 
 ## 1. Entity Overview & Data Store Alignment
 
-The ERD contains 5 core entities designed to map directly to the DFD data stores and capture all operational constraints from the four case files, including the extra requirement from the staff chat (`04_Staff_Chat.png`) regarding **Shelf Misfile Tracking**.
+The ERD contains 5 core entities designed to map directly to the DFD data stores and capture all operational constraints from the four case files plus **CR-1** (7-day temporary folder merge deadline).
 
 ### Entities:
 1. `PATIENT` (Maps to DFD DS-1): Stores master patient information and primary Medical Record (RM) number.
 2. `STAFF` (Auxiliary Entity): Stores filing clerks, registration staff, doctors, and supervisors.
-3. `MISFILE_LOG` (Maps to DFD DS-2): Records missing-folder search events, timestamps, initial search shelves, and resolution statuses.
-4. `TEMPORARY_FOLDER` (Maps to DFD DS-3): Tracks temporary folder IDs issued after 15 minutes of unsuccessful searching.
+3. `MISFILE_LOG` (Maps to DFD DS-2): Records missing-folder search events, timestamps, initial search shelves, and resolution statuses (3-day missing escalation).
+4. `TEMPORARY_FOLDER` (Maps to DFD DS-3): Tracks temporary folder IDs issued after 15 minutes of unsuccessful searching, including `merge_due_timestamp` (7 days post-issuance per CR-1).
 5. `SHELF_LOCATION` (Maps to DFD DS-4): Master table of shelf numbers (e.g., Shelf 45, Shelf 54) and building locations to compute shelf misfile hotspots.
 
 ---
@@ -64,6 +65,7 @@ erDiagram
         string log_id FK
         string rm_number FK
         datetime issued_timestamp
+        datetime merge_due_timestamp "7 days after issued_timestamp (CR-1)"
         string issued_by_staff_id FK
         boolean is_merged "Default: FALSE"
         datetime merged_timestamp
@@ -100,13 +102,14 @@ erDiagram
 * `search_end_time` (DATETIME, NULLABLE): Resolution timestamp.
 * `initial_shelf_searched` (VARCHAR(50)): Intended shelf location (e.g., `Shelf 45`).
 * `found_shelf_id` (VARCHAR(10), FK -> `SHELF_LOCATION.shelf_id`, NULLABLE): Actual location where folder was found (e.g., `SH-054`).
-* `status` (VARCHAR(20)): `SEARCHING`, `FOUND`, `TEMP_ACTIVE`, `ESCALATED_HEAD`, `MERGED`.
+* `status` (VARCHAR(25)): `SEARCHING`, `FOUND`, `TEMP_ACTIVE`, `ESCALATED_HEAD`, `ESCALATED_MERGE_OVERDUE`, `MERGED`.
 
 ### Table: `TEMPORARY_FOLDER`
 * `temp_folder_id` (VARCHAR(20), PK): Unique temporary folder code (e.g., `TEMP-456120`).
 * `log_id` (VARCHAR(20), FK -> `MISFILE_LOG.log_id`).
 * `rm_number` (VARCHAR(10), FK -> `PATIENT.rm_number`).
 * `issued_timestamp` (DATETIME): Created after 15 minutes of searching.
+* `merge_due_timestamp` (DATETIME): Auto-calculated as `issued_timestamp + 7 days` per CR-1.
 * `issued_by_staff_id` (VARCHAR(10), FK -> `STAFF.staff_id`).
 * `is_merged` (BOOLEAN): `TRUE` when combined with original, `FALSE` when pending.
 * `merged_timestamp` (DATETIME, NULLABLE): Timestamp of merge execution.
